@@ -1,0 +1,609 @@
+
+/* ========================================
+   GENERAL
+======================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 30px;
+    min-height: 100vh;
+    color: #e2e8f0;
+    background-color: #071827;
+    background-image:
+        linear-gradient(rgba(148, 163, 184, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.035) 1px, transparent 1px);
+    background-size: auto, 40px 40px, 40px 40px;
+}
+
+/* MAIN TITLE */
+h1 {
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 64px;
+    color: #facc15;
+    text-align: center;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-shadow:
+        3px 3px 0 #854d0e,
+        0 0 20px rgba(250, 204, 21, 0.25);
+    margin-bottom: 40px;
+}
+
+/* PLAYER HEADINGS */
+h2 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #334e68;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+
+/* ========================================
+   BOARD LAYOUT
+======================================== */
+
+.game-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 80px;
+    flex-wrap: nowrap;
+}
+
+.player1-container,
+.player2-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.player1-container h2,
+.player2-container h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+
+/* ========================================
+   GAME BOARD
+======================================== */
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(10, 30px);
+    grid-template-rows: repeat(10, 30px);
+    width: 304px;
+    height: 304px;
+    background-image: url('./images/ocean.jpeg');
+    background-size: cover;
+    background-position: center;
+
+    border: 2px solid #38bdf8;
+    border-radius: 5px;
+    box-shadow:
+        0 0 5px #38bdf8,
+        0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.square {
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(203, 213, 225, 0.5);
+    cursor: pointer;
+    background-color: transparent;
+    transition: background-color 0.15s ease;
+}
+
+
+/* ========================================
+   BOARD SHIP SPRITES
+======================================== */
+
+.shipPiece {
+    width: 100%;
+    height: 100%;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+
+
+/* ========================================
+   ATTACKS
+======================================== */
+
+/* HIT APPEARANCE */
+.square.hit {
+    background: radial-gradient(circle, #ff4444, #991b1b);
+    box-shadow:
+        0 0 10px #ef4444,
+        0 0 20px rgba(239, 68, 68, 0.8);
+    border: 2px solid #fca5a5;
+}
+
+/* Animate the newly hit square */
+.square.hit-animation {
+    animation: hitImpact 0.4s ease-out;
+}
+
+@keyframes hitImpact {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    40% {
+        transform: scale(1.2);
+        filter: brightness(2);
+    }
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+}
+
+/* Tint ship sprites red when hit */
+.square.hit .shipPiece {
+    filter: brightness(0.5) sepia(1) saturate(10) hue-rotate(-50deg);
+}
+
+/* MISS */
+.miss {
+    background-color: #93c5fd;
+    cursor: default;
+}
+
+/* SUNK SHIP APPEARANCE */
+.square.sunk {
+    background: radial-gradient(circle, #f97316, #991b1b, #450a0a);
+    border: 2px solid #fca5a5;
+    box-shadow:
+        0 0 10px #ef4444,
+        0 0 20px #dc2626,
+        inset 0 0 10px #facc15;
+}
+
+/* ANIMATE SUNK SHIP ONLY ONCE */
+.square.sunk-animation {
+    animation: shipExplosion 0.7s ease-out;
+}
+
+@keyframes shipExplosion {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    30% {
+        transform: scale(1.3);
+        filter: brightness(2.5);
+    }
+    60% {
+        transform: scale(0.9);
+        filter: brightness(1.5);
+    }
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+}
+
+/* ========================================
+   SHIP SELECTION
+======================================== */
+
+#ships-container {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 10px 0;
+    min-height: 120px;
+}
+
+.ships {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.ships img {
+    display: block;
+    width: auto;
+    height: 150px;
+    max-width: 220px;
+    object-fit: contain;
+}
+
+.ships:hover {
+    transform: scale(1.08);
+}
+
+.ships.selected {
+    animation: shake 0.3s ease-in-out infinite;
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-3px);
+    }
+    75% {
+        transform: translateX(3px);
+    }
+}
+
+
+/* ========================================
+   DIRECTION SELECTION
+======================================== */
+
+#direction-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 20px;
+}
+
+.direction-element {
+    padding: 10px 20px;
+    border: 1px solid #64748b;
+    border-radius: 6px;
+    background-color: white;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.direction-element:hover {
+    background-color: #dbeafe;
+}
+
+/* DIRECTION OPTIONS */
+.direction-options {
+    display: none;
+    position: absolute;
+    bottom: 65%;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 6px;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+.ships {
+    position: relative;
+}
+
+.ships.selected .direction-options {
+    display: flex;
+}
+
+/* DIRECTION BUTTONS */
+.direction-options button {
+    padding: 8px 13px;
+    border: 2px solid #64748b;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #334e68, #1e293b);
+    color: #e2e8f0;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #0f172a;
+    transition: all 0.15s ease;
+}
+
+.direction-options button:hover {
+    background: linear-gradient(180deg, #475569, #334155);
+    border-color: #94a3b8;
+    transform: translateY(-2px);
+}
+
+/* SELECTED DIRECTION */
+.direction-options button.selected {
+    background: linear-gradient(180deg, #facc15, #ca8a04);
+    color: #1e293b;
+    border-color: #fef08a;
+    box-shadow: 0 3px 0 #854d0e;
+}
+
+/* SHIP PREVIEW */
+.ship-preview {
+    background-color: rgba(234, 179, 8, 0.5);
+}
+
+
+/* ========================================
+   WINNER MESSAGE
+======================================== */
+
+#winner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 40px 0;
+    width: 100%;
+}
+
+.winner {
+    position: relative;
+    padding: 30px 70px;
+    min-width: 350px;
+    text-align: center;
+    background: linear-gradient(145deg, #1e3a5f, #0f172a);
+    border: 3px solid #eab308;
+    border-radius: 8px;
+    box-shadow:
+        0 0 15px rgba(234, 179, 8, 0.4),
+        0 8px 20px rgba(15, 23, 42, 0.4),
+        inset 0 0 15px rgba(148, 163, 184, 0.15);
+    animation: victoryEntrance 0.6s ease-out;
+}
+
+.winner::before,
+.winner::after {
+    content: '★';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #facc15;
+    font-size: 30px;
+}
+
+.winner::before {
+    left: 20px;
+}
+
+.winner::after {
+    right: 20px;
+}
+
+.winner-text {
+    margin: 0;
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 36px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #facc15;
+    text-shadow:
+        2px 2px 0 #854d0e,
+        0 0 12px rgba(250, 204, 21, 0.4);
+}
+
+@keyframes victoryEntrance {
+    0% {
+        opacity: 0;
+        transform: scale(0.7);
+    }
+    70% {
+        transform: scale(1.08);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+/* ========================================
+   BUTTONS
+======================================== */
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    background-color: #2563eb;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+button:hover {
+    background-color: #1d4ed8;
+}
+
+
+/* ========================================
+   GAME MODE BUTTONS
+======================================== */
+
+#game-mode {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+#pvp,
+#pvc {
+    position: relative;
+    min-width: 160px;
+    padding: 14px 20px;
+    font-size: 17px;
+
+    font-family: 'Black Ops One', sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+
+    color: #facc15;
+    background: linear-gradient(145deg, #1e3a5f, #0b1727);
+
+    border: 2px solid #64748b;
+    border-radius: 8px;
+
+    box-shadow:
+        0 5px 0 #020617,
+        0 8px 18px rgba(0, 0, 0, 0.4),
+        inset 0 0 15px rgba(148, 163, 184, 0.08);
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Gold accent on hover */
+#pvp:hover,
+#pvc:hover {
+    color: #fff7ae;
+    border-color: #facc15;
+    background: linear-gradient(145deg, #334e68, #172b42);
+
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 8px 0 #854d0e,
+        0 12px 25px rgba(250, 204, 21, 0.2),
+        inset 0 0 20px rgba(250, 204, 21, 0.08);
+}
+
+/* Pressed effect */
+#pvp:active,
+#pvc:active {
+    transform: translateY(2px);
+
+    box-shadow:
+        0 2px 0 #854d0e,
+        0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Keyboard accessibility */
+#pvp:focus-visible,
+#pvc:focus-visible {
+    outline: 3px solid #facc15;
+    outline-offset: 5px;
+}
+
+
+/* ========================================
+   RANDOM PLACEMENT BUTTON
+======================================== */
+
+#random-placement-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    top: 20px;
+    z-index: 2;
+}
+
+#random-placement {
+    min-width: 160px;
+    padding: 10px 18px;
+    font-size: 16px;
+
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+
+    color: #e2e8f0;
+    background: linear-gradient(145deg, #334e68, #0b1727);
+
+    border: 2px solid #64748b;
+    border-radius: 6px;
+
+    box-shadow:
+        0 4px 0 #020617,
+        0 7px 15px rgba(0, 0, 0, 0.4),
+        inset 0 0 12px rgba(148, 163, 184, 0.08);
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#random-placement:hover {
+    color: #facc15;
+    border-color: #facc15;
+    background: linear-gradient(145deg, #475569, #1e293b);
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 7px 0 #854d0e,
+        0 10px 20px rgba(250, 204, 21, 0.2);
+}
+
+#random-placement:active {
+    transform: translateY(2px);
+
+    box-shadow:
+        0 2px 0 #854d0e,
+        0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+#random-placement:focus-visible {
+    outline: 3px solid #facc15;
+    outline-offset: 5px;
+}
+
+
+#turn-switch-popup {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.turn-popup-content {
+    text-align: center;
+    color: white;
+}
+
+.turn-popup-content h1 {
+    font-size: 4rem;
+}
+
+#continue-game {
+    padding: 15px 35px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* ========================================
+   RESPONSIVE LAYOUT
+======================================== */
+
+@media (max-width: 750px) {
+    body {
+        padding: 20px 10px;
+    }
+
+    .game-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 40px;
+    }
+}
+
+@media (max-width: 350px) {
+    .board {
+        transform: scale(0.9);
+        transform-origin: top center;
+        margin-bottom: -30px;
+    }
+}
