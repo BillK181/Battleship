@@ -55,6 +55,7 @@ h2 {
     align-items: flex-start;
     gap: 80px;
     flex-wrap: nowrap;
+    position: relative;
 }
 
 .player1-container,
@@ -491,6 +492,75 @@ button:hover {
     outline-offset: 5px;
 }
 
+/* ========================================
+   ATTACK MODE BUTTONS
+======================================== */
+
+#attack-mode {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+#classic,
+#escalating-attacks {
+    position: relative;
+    min-width: 160px;
+    padding: 14px 20px;
+    font-size: 17px;
+
+    font-family: 'Black Ops One', sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+
+    color: #facc15;
+    background: linear-gradient(145deg, #1e3a5f, #0b1727);
+
+    border: 2px solid #64748b;
+    border-radius: 8px;
+
+    box-shadow:
+        0 5px 0 #020617,
+        0 8px 18px rgba(0, 0, 0, 0.4),
+        inset 0 0 15px rgba(148, 163, 184, 0.08);
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Gold accent on hover */
+#classic:hover,
+#escalating-attacks:hover {
+    color: #fff7ae;
+    border-color: #facc15;
+    background: linear-gradient(145deg, #334e68, #172b42);
+
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 8px 0 #854d0e,
+        0 12px 25px rgba(250, 204, 21, 0.2),
+        inset 0 0 20px rgba(250, 204, 21, 0.08);
+}
+
+/* Pressed effect */
+#classic:active,
+#escalating-attacks:active {
+    transform: translateY(2px);
+
+    box-shadow:
+        0 2px 0 #854d0e,
+        0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Keyboard accessibility */
+#classic:focus-visible,
+#escalating-attacks:focus-visible {
+    outline: 3px solid #facc15;
+    outline-offset: 5px;
+}
+
 
 /* ========================================
    RANDOM PLACEMENT BUTTON
@@ -582,6 +652,21 @@ button:hover {
     padding: 15px 35px;
     font-size: 1.2rem;
     cursor: pointer;
+}
+
+#countdown {
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 32px;
+    color: #facc15;
+    text-align: center;
+    text-shadow: 0 0 12px rgba(250, 204, 21, 0.4);
+
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 150px;
+
+    font-variant-numeric: tabular-nums;
 }
 
 /* ========================================

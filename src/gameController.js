@@ -33,6 +33,8 @@ function gameController(startGame) {
     let turnNumber = 1;
     let timesAttacked = 0;
 
+    const switchDelay = 5000;
+
     // Initialize the selected game mode
     function initializeGame(selectedGameMode) {
         const game = startGame(selectedGameMode);
@@ -223,7 +225,7 @@ function gameController(startGame) {
 
         // Show game mode selection and random placement button again
         gameModeElement.style.display = 'flex';
-        randomPlacementButton.style.display = 'block';
+        randomPlacementContainer.innerHTML = '';
     }
 
 
@@ -271,11 +273,13 @@ function gameController(startGame) {
 
                                 // Hide random placement once both players have placed their ships
                                 if (otherPlayer.gameboard.ships.length === 5) {
-                                    randomPlacementButton.style.display = 'none';
+                                    randomPlacementContainer.innerHTML = '';
                                     gameStarted = true;
                                 }
 
                                 switchingPlayers = true;
+
+                                startCountdown(switchDelay);
 
                                 const playerPlacing = currentPlayer;
 
@@ -289,10 +293,10 @@ function gameController(startGame) {
 
                                     switchingPlayers = false;
 
-                                }, 800);
+                                }, switchDelay);
 
                             } else {
-                                randomPlacementButton.style.display = 'none';
+                                randomPlacementContainer.innerHTML = '';
                             }
                         }
                     }
@@ -360,7 +364,7 @@ function gameController(startGame) {
                 renderWinner(winnerElement, winner);
                 gameModeElement.style.display = 'flex';
                 winnerElement.style.display = 'flex';
-            }, 1000);
+            }, switchDelay);
 
             return;
         }
@@ -384,7 +388,7 @@ function gameController(startGame) {
                     renderWinner(winnerElement, winner);
                     gameModeElement.style.display = 'flex';
                     winnerElement.style.display = 'flex';
-                }, 1000);
+                }, switchDelay);
                 return;
             }
         }
@@ -396,7 +400,7 @@ function gameController(startGame) {
                     switchPlayers();
                     showTurnPopup();
                     switchingPlayers = false;
-                }, 700);
+                }, switchDelay);
             }
             else if(attackMode === 'escalating attacks'){
                 if(timesAttacked + 1 >= turnNumber){
@@ -407,7 +411,7 @@ function gameController(startGame) {
                         switchPlayers();
                         showTurnPopup();
                         switchingPlayers = false;
-                    }, 700);
+                    }, switchDelay);
                 } else {
                     timesAttacked += 1;
                 }
@@ -448,6 +452,8 @@ function gameController(startGame) {
         renderShips(ships1, shipsContainer)
         renderBoard(player1.gameboard, board1, showShips)
         renderBoard(player2.gameboard, board2, false)
+        renderRandomPlacement(randomPlacementContainer);
+        randomPlacementContainer.querySelector('#random-placement').addEventListener('click', randomShipPlacement);
         attackModeElement.style.display = 'none';
     }
 
@@ -457,6 +463,8 @@ function gameController(startGame) {
         renderShips(ships1, shipsContainer)
         renderBoard(player1.gameboard, board1, showShips)
         renderBoard(player2.gameboard, board2, false)
+        renderRandomPlacement(randomPlacementContainer);
+        randomPlacementContainer.querySelector('#random-placement').addEventListener('click', randomShipPlacement);
         attackModeElement.style.display = 'none';
     }
 
@@ -503,10 +511,12 @@ function gameController(startGame) {
 
                 // Hide random placement once both players have placed ships
                 if (otherPlayer.gameboard.ships.length === 5) {
-                    randomPlacementButton.style.display = 'none';
+                    randomPlacementContainer.innerHTML = '';
                 }
 
                 switchingPlayers = true;
+
+                startCountdown(switchDelay);
 
                 const playerPlacing = currentPlayer;
 
@@ -520,12 +530,29 @@ function gameController(startGame) {
 
                     switchingPlayers = false;
 
-                }, 1500);
+                }, switchDelay);
 
             } else {
-                randomPlacementButton.style.display = 'none';
+                randomPlacementContainer.innerHTML = '';
             }
         }
+    }
+
+    function startCountdown(duration) {
+        let timeRemaining = duration;
+        countdownElement.textContent = (timeRemaining / 1000).toFixed(1);
+
+        const countdown = setInterval(() => {
+            timeRemaining -= 100;
+
+            if(timeRemaining <= 0) {
+                clearInterval(countdown);
+                countdownElement.textContent = '';
+                return
+            }
+
+            countdownElement.textContent = (timeRemaining / 1000).toFixed(1)
+        }, 100)
     }
 
     function showTurnPopup() {
@@ -553,11 +580,13 @@ function gameController(startGame) {
     const pvcButton = document.querySelector('#pvc');
 
     // Get HTML element for random placement
-    const randomPlacementButton = document.querySelector('#random-placement')
+    const randomPlacementContainer = document.querySelector('#random-placement-container');
 
     const turnPopup = document.querySelector('#turn-switch-popup');
     const turnMessage = document.querySelector('#turn-message');
     const continueButton = document.querySelector('#continue-game');
+
+    const countdownElement = document.querySelector('#countdown');
 
     
     const attackModeElement = document.querySelector('#attack-mode');
@@ -582,8 +611,6 @@ function gameController(startGame) {
     // Listen for game mode selection
     pvpButton.addEventListener('click', pvpClick);
     pvcButton.addEventListener('click', pvcClick);
-    // Random placement
-    randomPlacementButton.addEventListener('click', randomShipPlacement);
 
     continueButton.addEventListener('click', hideTurnPopup);
 }

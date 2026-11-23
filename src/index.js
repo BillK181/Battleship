@@ -19,8 +19,6 @@ const directionContainer = document.querySelector('#direction-container');
 // Render random placement button
 const randomPlacementContainer = document.querySelector('#random-placement-container');
 
-renderRandomPlacement(randomPlacementContainer);
-
 // Render game mode selection buttons
 renderGameMode(gameModeElement);
 
@@ -41,9 +39,6 @@ function startGame(gameMode) {
     } else {
         player2 = new ComputerPlayer();
     }
-
-    // Render the available ships for player 1 to select
-    renderShips(ships1, shipsContainer);
 
     // Computer automatically places its ships
     if (gameMode === 'pvc') {
