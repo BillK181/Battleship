@@ -1,4 +1,4 @@
-import { renderBoard, renderShips, renderWinner, renderRandomPlacement, renderGameMode } from "./dom"
+import { renderBoard, renderShips, renderWinner, renderRandomPlacement, renderGameMode, renderAttackMode } from "./dom"
 import { makeShips } from "./Ship"
 import { ComputerPlayer } from './Player';
 
@@ -24,9 +24,14 @@ function gameController(startGame) {
 
     let gameMode;
 
+    let attackMode;
+
     let switchingPlayers = false;
 
     let gameStarted = false;
+
+    let turnNumber = 1;
+    let timesAttacked = 0;
 
     // Initialize the selected game mode
     function initializeGame(selectedGameMode) {
@@ -299,7 +304,6 @@ function gameController(startGame) {
 
     // Human player attack
     function humanAttackClick(event) {
-
         if (switchingPlayers) return;
 
         // Stop if the game hasn't started
@@ -386,12 +390,28 @@ function gameController(startGame) {
         }
         // Switch turns for human vs human
         if (gameMode === 'pvp') {
-            switchingPlayers = true;
-            setTimeout(() => {
-                switchPlayers();
-                showTurnPopup();
-                switchingPlayers = false;
-            }, 700);
+            if (attackMode === 'classic'){
+                switchingPlayers = true;
+                setTimeout(() => {
+                    switchPlayers();
+                    showTurnPopup();
+                    switchingPlayers = false;
+                }, 700);
+            }
+            else if(attackMode === 'escalating attacks'){
+                if(timesAttacked + 1 >= turnNumber){
+                    switchingPlayers = true;
+                    turnNumber += 1;
+                    timesAttacked = 0;
+                    setTimeout(() => {
+                        switchPlayers();
+                        showTurnPopup();
+                        switchingPlayers = false;
+                    }, 700);
+                } else {
+                    timesAttacked += 1;
+                }
+            }
         }
     }
     
@@ -403,10 +423,10 @@ function gameController(startGame) {
             resetGame();
         }
         initializeGame('pvp');
-        // Render ships and boards
-        renderShips(ships1, shipsContainer)
-        renderBoard(player1.gameboard, board1, showShips)
-        renderBoard(player2.gameboard, board2, false)
+        renderAttackMode(attackModeElement);
+
+        document.querySelector('#escalating-attacks').addEventListener('click', escalatingAttacksClick);
+        document.querySelector('#classic').addEventListener('click', classicClick);
     }
 
     // Handle Player vs Computer selection
@@ -420,6 +440,24 @@ function gameController(startGame) {
         renderShips(ships1, shipsContainer)
         renderBoard(player1.gameboard, board1, showShips)
         renderBoard(player2.gameboard, board2, false)
+    }
+
+    function escalatingAttacksClick(){
+        attackMode = 'escalating attacks'
+        // Render ships and boards
+        renderShips(ships1, shipsContainer)
+        renderBoard(player1.gameboard, board1, showShips)
+        renderBoard(player2.gameboard, board2, false)
+        attackModeElement.style.display = 'none';
+    }
+
+    function classicClick(){
+        attackMode = 'classic'
+        // Render ships and boards
+        renderShips(ships1, shipsContainer)
+        renderBoard(player1.gameboard, board1, showShips)
+        renderBoard(player2.gameboard, board2, false)
+        attackModeElement.style.display = 'none';
     }
 
     // Switch current player
@@ -520,6 +558,9 @@ function gameController(startGame) {
     const turnPopup = document.querySelector('#turn-switch-popup');
     const turnMessage = document.querySelector('#turn-message');
     const continueButton = document.querySelector('#continue-game');
+
+    
+    const attackModeElement = document.querySelector('#attack-mode');
 
 
     // Click handlers

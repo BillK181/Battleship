@@ -276,6 +276,28 @@ function renderGameMode(element) {
     element.append(title, pvpButton, pvcButton);
 }
 
+function renderAttackMode(element){
+    // Clear any existing content inside the element
+    element.innerHTML = '';
+
+    // Create attack mode section heading
+    const atttackTitle = document.createElement('h2');
+    atttackTitle.textContent = 'Select Game Mode';
+
+    // Create escalating attacks button
+    const escalatingAttacksButton = document.createElement('button');
+    escalatingAttacksButton.textContent = 'Escalating Attacks';
+    escalatingAttacksButton.id = 'escalating-attacks';
+
+    // Create classic button
+    const classicButton = document.createElement('button');
+    classicButton.textContent = 'Classic';
+    classicButton.id = 'classic'
+
+    // Add heading and buttons to element
+    element.append(atttackTitle, escalatingAttacksButton, classicButton)
+}
+
 
 // Render random ship placement button
 function renderRandomPlacement(element){
@@ -289,4 +311,4 @@ function renderRandomPlacement(element){
     element.append(randomPlacementButton)
 }
 
-export { renderBoard, renderShips, renderWinner, renderGameMode, renderRandomPlacement };
+export { renderBoard, renderShips, renderWinner, renderGameMode, renderAttackMode, renderRandomPlacement };
