@@ -22,6 +22,10 @@ const randomPlacementContainer = document.querySelector('#random-placement-conta
 // Render game mode selection buttons
 renderGameMode(gameModeElement);
 
+// Hide confirm ship placement button
+const confirmPlacementButton = document.querySelector('#confirm-placement')
+confirmPlacementButton.style.display = 'none';
+
 // Start game based on selected game mode
 function startGame(gameMode) {
 

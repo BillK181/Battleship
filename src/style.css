@@ -53,7 +53,8 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    gap: 80px;
+    margin: 50px 10px;
+    gap: 350px;
     flex-wrap: nowrap;
     position: relative;
 }
@@ -626,6 +627,98 @@ button:hover {
     outline-offset: 5px;
 }
 
+/* ========================================
+   CONFIRM PLACEMENT
+======================================== */
+
+#confirm-placement {
+    min-width: 160px;
+    padding: 10px 18px;
+    font-size: 16px;
+
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+
+    color: #e2e8f0;
+    background: linear-gradient(145deg, #334e68, #0b1727);
+
+    border: 2px solid #64748b;
+    border-radius: 6px;
+
+    box-shadow:
+        0 4px 0 #020617,
+        0 7px 15px rgba(0, 0, 0, 0.4),
+        inset 0 0 12px rgba(148, 163, 184, 0.08);
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#confirm-placement:hover {
+    color: #facc15;
+    border-color: #facc15;
+    background: linear-gradient(145deg, #475569, #1e293b);
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 7px 0 #854d0e,
+        0 10px 20px rgba(250, 204, 21, 0.2);
+}
+
+#confirm-placement:active {
+    transform: translateY(2px);
+
+    box-shadow:
+        0 2px 0 #854d0e,
+        0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+#confirm-placement:focus-visible {
+    outline: 3px solid #facc15;
+    outline-offset: 5px;
+}
+
+/* ========================================
+   COUNTDOWN
+======================================== */
+
+#placement-controls {
+    position: absolute;
+    left: 50%;
+    top: 150px;
+    transform: translateX(-50%);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+
+    z-index: 5;
+}
+
+#countdown {
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 32px;
+    color: #facc15;
+    text-align: center;
+    text-shadow: 0 0 12px rgba(250, 204, 21, 0.4);
+    font-variant-numeric: tabular-nums;
+}
+
+#confirm-placement {
+    /* Keep your existing button styling */
+    margin-bottom: 0;
+}
+
+
+/* ========================================
+   TURN SWITCH
+======================================== */
+
 
 #turn-switch-popup {
     position: fixed;
@@ -649,24 +742,54 @@ button:hover {
 }
 
 #continue-game {
-    padding: 15px 35px;
-    font-size: 1.2rem;
+    min-width: 160px;
+    padding: 10px 18px;
+    font-size: 16px;
+
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+
+    color: #e2e8f0;
+    background: linear-gradient(145deg, #334e68, #0b1727);
+
+    border: 2px solid #64748b;
+    border-radius: 6px;
+
+    box-shadow:
+        0 4px 0 #020617,
+        0 7px 15px rgba(0, 0, 0, 0.4),
+        inset 0 0 12px rgba(148, 163, 184, 0.08);
+
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-#countdown {
-    font-family: 'Black Ops One', sans-serif;
-    font-size: 32px;
+#continue-game:hover {
     color: #facc15;
-    text-align: center;
-    text-shadow: 0 0 12px rgba(250, 204, 21, 0.4);
+    border-color: #facc15;
+    background: linear-gradient(145deg, #475569, #1e293b);
 
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 150px;
+    transform: translateY(-3px);
 
-    font-variant-numeric: tabular-nums;
+    box-shadow:
+        0 7px 0 #854d0e,
+        0 10px 20px rgba(250, 204, 21, 0.2);
+}
+
+#continue-game:active {
+    transform: translateY(2px);
+
+    box-shadow:
+        0 2px 0 #854d0e,
+        0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+#continue-game:focus-visible {
+    outline: 3px solid #facc15;
+    outline-offset: 5px;
 }
 
 /* ========================================
