@@ -682,6 +682,19 @@ button:hover {
     outline-offset: 5px;
 }
 
+/* PLACEMENT MESSAGE */
+#placement-message {
+    display: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 60px;
+    font-weight: 700;
+    color: #334e68;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-align: center;
+    margin: 100px auto 0 auto; 
+}
+
 /* ========================================
    COUNTDOWN
 ======================================== */
@@ -790,6 +803,44 @@ button:hover {
 #continue-game:focus-visible {
     outline: 3px solid #facc15;
     outline-offset: 5px;
+}
+
+/* ========================================
+   Attacks Remaining
+======================================== */
+
+
+#attacks-remaining {
+    position: absolute;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+
+    z-index: 5;
+    white-space: nowrap;
+}
+
+#count {
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 230px;
+    line-height: 1;
+    color: #facc15;
+    text-shadow: 0 0 15px rgba(250, 204, 21, 0.35);
+}
+
+.attacks-label {
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #94a3b8;
+    text-transform: uppercase;
 }
 
 /* ========================================

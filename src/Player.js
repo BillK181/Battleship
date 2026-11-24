@@ -52,92 +52,309 @@ class ComputerPlayer extends Player {
         super(name)
     }
 
-    // Choose a coordinate and attack the human player's gameboard
-    computerAttack(player){
+    
+    computerAttack(player) {
 
-        // Find all previous successful hits by excluding missed attacks
-        const hits = player.gameboard.attackedCoordinates.filter((attack) => {
-            return !player.gameboard.missedAttacks.some((miss) => {
-                return miss[0] === attack[0] && miss[1] === attack[1]
-            })
-        })
+        const gameboard = player.gameboard;
+        const size = gameboard.size;
 
-        // Create an array to store every coordinate on the board
-        const boardSpaces = []
-        for(let i = 0; i < player.gameboard.size; i++) {
-            const row = []
+        // ------------------------------------------
+        // Previous attacks
+        // ------------------------------------------
 
-            // Add each column coordinate to the current row
-            for(let j = 0; j < player.gameboard.size; j++) {
-                row.push([i, j])
+        const attacked = gameboard.attackedCoordinates;
+        const missed = gameboard.missedAttacks;
+
+        const isAttacked = ([row, column]) => {
+            return attacked.some(([r, c]) => r === row && c === column);
+        };
+
+        const isMissed = ([row, column]) => {
+            return missed.some(([r, c]) => r === row && c === column);
+        };
+
+        const isHit = ([row, column]) => {
+            return isAttacked([row, column]) && !isMissed([row, column]);
+        };
+
+        // ------------------------------------------
+        // Find remaining unsunk ships
+        // ------------------------------------------
+
+        const remainingShips = gameboard.ships.filter(ship => !ship.isSunk());
+
+        // ------------------------------------------
+        // Find all successful hits
+        // ------------------------------------------
+
+        const hits = attacked.filter(([row, column]) => {
+            return isHit([row, column]);
+        });
+
+        // ------------------------------------------
+        // Find hits belonging to unsunk ships
+        // ------------------------------------------
+
+        const activeHits = [];
+
+        for (const hit of hits) {
+
+            const [row, column] = hit;
+            const ship = gameboard.board[row][column];
+
+            if (ship && !ship.isSunk()) {
+                activeHits.push(hit);
+            }
+        }
+
+        // ------------------------------------------
+        // Generate all possible board coordinates
+        // ------------------------------------------
+
+        const availableSpaces = [];
+
+        for (let row = 0; row < size; row++) {
+            for (let column = 0; column < size; column++) {
+
+                if (!isAttacked([row, column])) {
+                    availableSpaces.push([row, column]);
+                }
+            }
+        }
+
+        if (availableSpaces.length === 0) return;
+
+        // ------------------------------------------
+        // Target mode
+        // ------------------------------------------
+
+        const targetChoices = [];
+
+        for (const [row, column] of activeHits) {
+
+            const directions = [
+                [row + 1, column],
+                [row - 1, column],
+                [row, column + 1],
+                [row, column - 1]
+            ];
+
+            for (const choice of directions) {
+
+                const [r, c] = choice;
+
+                if (
+                    r >= 0 &&
+                    r < size &&
+                    c >= 0 &&
+                    c < size &&
+                    !isAttacked(choice)
+                ) {
+                    targetChoices.push(choice);
+                }
+            }
+        }
+
+        // Remove duplicate coordinates
+        const uniqueTargetChoices = targetChoices.filter((choice, index, array) => {
+            return array.findIndex(([r, c]) => {
+                return r === choice[0] && c === choice[1];
+            }) === index;
+        });
+
+        // ------------------------------------------
+        // Direction detection
+        // ------------------------------------------
+
+        const horizontalHits = new Set();
+        const verticalHits = new Set();
+
+        for (const [row, column] of activeHits) {
+
+            const horizontalConnected = activeHits.some(([r, c]) => {
+                return r === row && Math.abs(c - column) === 1;
+            });
+
+            const verticalConnected = activeHits.some(([r, c]) => {
+                return c === column && Math.abs(r - row) === 1;
+            });
+
+            if (horizontalConnected) {
+                horizontalHits.add(row);
             }
 
-            // Add the completed row to the board
-            boardSpaces.push(row)
+            if (verticalConnected) {
+                verticalHits.add(column);
+            }
         }
 
-        // Convert the 2D array of coordinates into a single array
-        const flatSpaces = boardSpaces.flat()
+        // If a ship is horizontal, only target the ends of its line
+        if (horizontalHits.size > 0) {
 
-        // Find all coordinates that have not already been attacked
-        const availableSpaces = flatSpaces.filter((available) => {
-            return !player.gameboard.attackedCoordinates.some((attacked) => {
-                return attacked[0] === available[0] && attacked[1] === available[1]
-            })
-        })
+            const row = [...horizontalHits][0];
 
-        // Create an array to store coordinates adjacent to previous hits
-        const choices = []
+            const columns = activeHits
+                .filter(([r]) => r === row)
+                .map(([, c]) => c);
 
-        // Check the coordinate directly below each previous hit
-        for(let i = 0; i < hits.length; i++) {
-            const choice = [...hits[i]]
-            choice[0] = choice[0] + 1
-            choices.push(choice)
-        }
-        
-        // Check the coordinate directly to the right of each previous hit
-        for(let i = 0; i < hits.length; i++) {
-            const choice = [...hits[i]]
-            choice[1] = choice[1] + 1
-            choices.push(choice)
-        }
+            const minColumn = Math.min(...columns);
+            const maxColumn = Math.max(...columns);
 
-        // Check the coordinate directly above each previous hit
-        for(let i = 0; i < hits.length; i++) {
-            const choice = [...hits[i]]
-            choice[0] = choice[0] - 1
-            choices.push(choice)
+            const choices = [
+                [row, minColumn - 1],
+                [row, maxColumn + 1]
+            ].filter(([r, c]) => {
+                return r >= 0 && r < size &&
+                    c >= 0 && c < size &&
+                    !isAttacked([r, c]);
+            });
+
+            if (choices.length > 0) {
+                this.attack(player, choices[Math.floor(Math.random() * choices.length)]);
+                return;
+            }
         }
 
-        // Check the coordinate directly to the left of each previous hit
-        for(let i = 0; i < hits.length; i++) {
-            const choice = [...hits[i]]
-            choice[1] = choice[1] - 1
-            choices.push(choice)
+        // If a ship is vertical, only target the ends of its line
+        if (verticalHits.size > 0) {
+
+            const column = [...verticalHits][0];
+
+            const rows = activeHits
+                .filter(([, c]) => c === column)
+                .map(([r]) => r);
+
+            const minRow = Math.min(...rows);
+            const maxRow = Math.max(...rows);
+
+            const choices = [
+                [minRow - 1, column],
+                [maxRow + 1, column]
+            ].filter(([r, c]) => {
+                return r >= 0 && r < size &&
+                    c >= 0 && c < size &&
+                    !isAttacked([r, c]);
+            });
+
+            if (choices.length > 0) {
+                this.attack(player, choices[Math.floor(Math.random() * choices.length)]);
+                return;
+            }
         }
 
-        // Remove coordinates that have already been attacked
-        const realChoices = choices.filter((choice) => {
-            return !player.gameboard.attackedCoordinates.some((alreadyattacked) => {
-                return alreadyattacked[0] === choice[0] && alreadyattacked[1] === choice[1]
-            })
-        })
+        // ------------------------------------------
+        // Target adjacent squares
+        // ------------------------------------------
 
-        // Remove coordinates that fall outside the gameboard
-        const containedChoices = realChoices.filter((choice) => {
-            return choice[0] >= 0 && choice[0] < player.gameboard.size && choice[1] >= 0 && choice[1] < player.gameboard.size
-        })
+        if (uniqueTargetChoices.length > 0) {
 
-        // If there are no valid adjacent coordinates, choose a random available space
-        if(containedChoices.length === 0) {
-            this.attack(player, availableSpaces[Math.floor(Math.random() * availableSpaces.length)])
-        } else {
+            this.attack(
+                player,
+                uniqueTargetChoices[Math.floor(Math.random() * uniqueTargetChoices.length)]
+            );
 
-            // Otherwise, randomly choose one of the valid adjacent coordinates
-            this.attack(player, containedChoices[Math.floor(Math.random() * containedChoices.length)])
+            return;
         }
+
+        // ------------------------------------------
+        // Hunt mode: probability calculation
+        // ------------------------------------------
+
+        const probability = new Map();
+
+        for (const [row, column] of availableSpaces) {
+            probability.set(`${row},${column}`, 0);
+        }
+
+        for (const ship of remainingShips) {
+
+            const length = ship.length;
+
+            // Check horizontal placements
+            for (let row = 0; row < size; row++) {
+                for (let column = 0; column <= size - length; column++) {
+
+                    const placement = [];
+
+                    for (let i = 0; i < length; i++) {
+                        placement.push([row, column + i]);
+                    }
+
+                    if (placement.some(([r, c]) => isMissed([r, c]))) continue;
+
+                    if (placement.some(([r, c]) => {
+                        return isHit([r, c]) &&
+                            !activeHits.some(([hr, hc]) => hr === r && hc === c);
+                    })) continue;
+
+                    for (const [r, c] of placement) {
+                        const key = `${r},${c}`;
+
+                        if (probability.has(key)) {
+                            probability.set(key, probability.get(key) + 1);
+                        }
+                    }
+                }
+            }
+
+            // Check vertical placements
+            for (let row = 0; row <= size - length; row++) {
+                for (let column = 0; column < size; column++) {
+
+                    const placement = [];
+
+                    for (let i = 0; i < length; i++) {
+                        placement.push([row + i, column]);
+                    }
+
+                    if (placement.some(([r, c]) => isMissed([r, c]))) continue;
+
+                    if (placement.some(([r, c]) => {
+                        return isHit([r, c]) &&
+                            !activeHits.some(([hr, hc]) => hr === r && hc === c);
+                    })) continue;
+
+                    for (const [r, c] of placement) {
+                        const key = `${r},${c}`;
+
+                        if (probability.has(key)) {
+                            probability.set(key, probability.get(key) + 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        // ------------------------------------------
+        // Choose the highest probability coordinate
+        // ------------------------------------------
+
+        let bestChoices = [];
+        let highestProbability = -1;
+
+        for (const [coordinate, score] of probability) {
+
+            if (score > highestProbability) {
+                highestProbability = score;
+                bestChoices = [coordinate];
+            } else if (score === highestProbability) {
+                bestChoices.push(coordinate);
+            }
+        }
+
+        // Convert coordinate strings back into arrays
+        const choices = bestChoices.map(coordinate => {
+            return coordinate.split(',').map(Number);
+        });
+
+        // Randomly choose between equally likely coordinates
+        const selectedCoordinate = choices.length > 0
+            ? choices[Math.floor(Math.random() * choices.length)]
+            : availableSpaces[Math.floor(Math.random() * availableSpaces.length)];
+
+        this.attack(player, selectedCoordinate);
     }
+
 
 
     // Automatically place all computer ships in random valid positions

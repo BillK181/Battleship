@@ -4,81 +4,153 @@ import { ComputerPlayer } from './Player';
 
 function gameController(startGame) {
 
-    // Game variables (assigned after game mode selection)
+    // ------------------------------------------
+    // Variables
+    // ------------------------------------------
+
+    // Players
     let player1;
     let player2;
-    let ships1;
-    let ships2;
-    let showShips;
-
-    // Current player
     let currentPlayer;
-
-    let currentPlayerElement;
-
-    let ships;
-
     let otherPlayer;
 
+
+    // Player DOM elements
+    let currentPlayerElement;
     let otherPlayerElement;
 
-    let gameMode;
 
+    // Ships
+    let ships1;
+    let ships2;
+    let ships;
+    let showShips;
+    // Selected ship
+    let selectedShip;
+    let selectedShipElement;
+    // Selected direction for ship
+    let direction;
+
+
+    // Game settings
+    let gameMode;
     let attackMode;
 
-    let switchingPlayers = false;
 
+    // Game state
     let gameStarted = false;
+    let gameOver = false;
+    let switchingPlayers = false;
+    let confirmPlacementCount = 0;
 
+
+    // Turn tracking
     let turnNumber = 1;
     let timesAttacked = 0;
 
+
+    // Timers
     const lastShipDelay = 5000;
-
-    const turnSwitchDelay = 1000;
-
+    const turnSwitchDelay = 700;
     let countdown;
     let playerSwitchTimeout;
 
-    let gameOver = false;
+
+    // ------------------------------------------
+    // DOM ELEMENT REFERENCES
+    // ------------------------------------------
+
+
+    // Game boards
+    const board1 = document.querySelector('#player1-board');
+    const board2 = document.querySelector('#player2-board');
+
+    // Ship elements
+    const shipsContainer = document.querySelector('#ships-container');
+    const randomPlacementContainer = document.querySelector('#random-placement-container');
+    const confirmPlacementButton = document.querySelector('#confirm-placement');
+
+    // Game mode selection
+    const gameModeElement = document.querySelector('#game-mode');
+    const pvpButton = document.querySelector('#pvp');
+    const pvcButton = document.querySelector('#pvc');
+
+    // Game status
+    const winnerElement = document.querySelector('#winner');
+
+    // Turn switching
+    const turnPopup = document.querySelector('#turn-switch-popup');
+    const turnMessage = document.querySelector('#turn-message');
+    const continueButton = document.querySelector('#continue-game');
+    const placementMessage = document.querySelector('#placement-message');
+
+    // Attacks remaining
+    const attacksRemaining = document.querySelector('#attacks-remaining');
+    const attackCount = document.querySelector('#count');
+
+    // Game settings
+    const countdownElement = document.querySelector('#countdown');
+    const attackModeElement = document.querySelector('#attack-mode');
+
+
+    // ------------------------------------------
+    // Game Initialization
+    // ------------------------------------------
+
 
     // Initialize the selected game mode
     function initializeGame(selectedGameMode) {
+
+        // Clear previous game timers
         clearInterval(countdown);
         clearTimeout(playerSwitchTimeout);
+
+        // Create players and ships
         const game = startGame(selectedGameMode);
 
         player1 = game.player1;
         player2 = game.player2;
+
         ships1 = game.ships1;
         ships2 = game.ships2;
+
         showShips = game.showShips;
+
+        // Set player names
         player1.name = 'Player 1';
         player2.name = selectedGameMode === 'pvc' ? 'Computer' : 'Player 2';
 
+        // Set initial player and board references
         currentPlayer = player1;
         otherPlayer = player2;
+
         currentPlayerElement = board1;
         otherPlayerElement = board2;
+
         ships = ships1;
+
+        // Set game settings
         gameMode = selectedGameMode;
+
         player1.showShips = true;
         player2.showShips = false;
 
+        // Hide game mode selection
         gameModeElement.style.display = 'none';
 
+        // Reset game state
         gameStarted = false;
         gameOver = false;
         turnNumber = 1;
         timesAttacked = 0;
+        confirmPlacementCount = 0;
         switchingPlayers = false;
     }
 
-    // Selected ship object
-    let selectedShip;
+    // -----------------------------------------------------
+    // Ship Movement
+    // -----------------------------------------------------
 
-    // Selected Ship's HTML element
-    let selectedShipElement;
 
     // Ship selection
     function shipClick(event){
@@ -112,104 +184,6 @@ function gameController(startGame) {
         shipElement.classList.add('selected');
     }
 
-    function pickUpShipFromBoard(event) {
-
-        // Return if both players have all 5 ships on the board
-        if (gameStarted) return;
-
-        if (selectedShip !== undefined) return;
-
-        // Return if no square was selected to pick a ship up from
-        const square = event.target.closest('.square');
-        if(!square) return;
-
-        // Get row and column of square being hovered over
-        const row = parseInt(square.dataset.row);
-        const column = parseInt(square.dataset.column);
-
-        // Get the ship object that is at the selected square on the board
-        selectedShip = currentPlayer.gameboard.board[row][column];
-
-        if(selectedShip !== null) {
-
-            // Pick up ship if there is a ship at the square
-            currentPlayer.gameboard.pickUpShip(selectedShip, [row, column])
-
-            // Show random placement button again
-            randomPlacementContainer.style.display = 'flex';
-            
-        } else {
-            // Return if there is no ship object
-            return
-        }
-
-        // Add picked up ship to ships array
-        ships.push(selectedShip)
-        
-        // Clear selectedShip
-        selectedShip = undefined
-
-        // Stop countdown
-        stopCountdown();
-
-        // Render ships and boards
-        renderShips(ships, shipsContainer)
-        renderBoard(currentPlayer.gameboard, currentPlayerElement, currentPlayer.showShips )
-    }
-
-
-    // Show where ship is about to be placed
-    function previewShip(event) {
-
-        if (!currentPlayerElement) return;
-
-        // Remove previous preview
-        currentPlayerElement.querySelectorAll('.ship-preview').forEach(square => {
-            square.classList.remove('ship-preview');
-        });
-
-        // Check if a ship and direction are selected
-        if (!selectedShip || !direction) return;
-
-        // Find the closest square to the pointer
-        const square = event.target.closest('.square');
-
-        // Return if no square found
-        if (!square) return;
-
-        // Get row and column of square being hovered over
-        const row = parseInt(square.dataset.row);
-        const column = parseInt(square.dataset.column);
-
-        // Loop through each section of the selected ship
-        for (let i = 0; i < selectedShip.length; i++) {
-
-            // Start at the hovered square of each ship
-            let previewRow = row;
-            let previewColumn = column;
-
-            // Adjust the row or column based on the selected direction
-            if (direction === 'horizontal') {
-                previewColumn += i;
-            } else {
-                previewRow += i;
-            }
-
-            // Find the board square matching the calculated coordinates
-            const previewSquare = currentPlayerElement.querySelector(
-                `[data-row="${previewRow}"][data-column="${previewColumn}"]`
-            );
-
-            // Add the preview class if the square exists on the board
-            if (previewSquare) {
-                previewSquare.classList.add('ship-preview');
-            }
-        }
-    }
-
-
-    // Selected direction for ship
-    let direction;
 
     // Ship direction selection
     function directionClick(event) {
@@ -230,36 +204,7 @@ function gameController(startGame) {
     }
 
 
-    // Reset game to begining state
-    function resetGame(){
-
-        // Resets the board for each player
-        player1.gameboard.cleanBoard()
-        player2.gameboard.cleanBoard()
-
-        // Make new ships
-        ships1 = makeShips()
-        ships2 = makeShips()
-
-        if (gameMode === 'pvc') {
-            player2.placeAllShips(ships2);
-        }
-
-        // Reset ship and direction selection
-        selectedShip = undefined
-        direction = undefined
-
-        // Reset the text inside the winner popup
-        winnerElement.innerHTML = ''
-
-        // Show game mode selection and random placement button again
-        gameModeElement.style.display = 'flex';
-        randomPlacementContainer.style.display = 'flex';
-        attackModeElement.style.display = 'flex';
-    }
-
-
-    // Human player ship placement
+    // Place ship on board
     function humanPlaceShip(event){
 
         if (!currentPlayer) return;
@@ -312,6 +257,7 @@ function gameController(startGame) {
                                 switchingPlayers = true;
 
                                 showCountdown()
+                                showPlacementMessage();
 
                                 const playerPlacing = currentPlayer;
 
@@ -345,182 +291,254 @@ function gameController(startGame) {
     }
 
 
-    // Human player attack
-    function humanAttackClick(event) {
-        if (gameOver) return;
-        if (switchingPlayers) return;
+    // Randomly place ships
+    function randomShipPlacement() {
+        if (currentPlayer.gameboard.ships.length === 5) return;
 
-        // Stop if the game hasn't started
-        if (!currentPlayer) return;
+        currentPlayer.randomPlacement(ships);
+        renderShips(ships, shipsContainer);
+        renderBoard(currentPlayer.gameboard, currentPlayerElement, currentPlayer.showShips);
 
-        // Prevent attacking your own board
-        if (gameMode === 'pvc' && event.currentTarget === board1) return;
-        if (gameMode === 'pvp' && event.currentTarget === currentPlayerElement) return;
+        // Switch players once all five ships are placed
+        if (currentPlayer.gameboard.ships.length === 5) {
 
-        // Check if both players have all 5 ships placed
-        if (currentPlayer.gameboard.ships.length !== 5 || otherPlayer.gameboard.ships.length !== 5) {
-            return
-        }
+            if (gameMode === 'pvp') {
 
-        // Find the clicked board square
-        const square = event.target.closest('.square');
-        if (!square) return;
-
-        // Get coordinates
-        const row = parseInt(square.dataset.row);
-        const column = parseInt(square.dataset.column);
-
-        const targetPlayer = gameMode === 'pvc' ? player2 : otherPlayer;
-
-        const alreadyAttacked = targetPlayer.gameboard.attackedCoordinates.some((attack) => {
-            return attack[0] === row && attack[1] === column;
-        });
-
-        // Stop if selected coordinates have already been attacked
-        if (alreadyAttacked) {
-            return;
-        }
-
-        // Human player attacks computer
-        if (gameMode === 'pvc') {
-            player1.attack(player2, [row, column]);
-            renderBoard(player2.gameboard, board2, player2.showShips, [row, column]);
-            renderBoard(player1.gameboard, board1, player1.showShips);
-        } else {
-            // Current player attacks opponent
-            currentPlayer.attack(otherPlayer, [row, column]);
-
-            // Render opponent's board
-            renderBoard(otherPlayer.gameboard, otherPlayerElement, otherPlayer.showShips, [row, column]);
-        }
-
-        // Check winner
-        if (targetPlayer.gameboard.allShipsSunk()) {
-            gameOver = true;
-            const winner = currentPlayer;
-
-            setTimeout(() => {
-                renderBoard(player1.gameboard, board1, true)
-                renderBoard(player2.gameboard, board2, true)
-                renderWinner(winnerElement, winner);
-                gameModeElement.style.display = 'flex';
-                winnerElement.style.display = 'flex';
-                randomPlacementContainer.style.display = 'none';
-            }, turnSwitchDelay);
-
-            return;
-        }
-
-        // Computer opponent's turn
-        if (gameMode === 'pvc') {
-
-            // Computer player attacks
-            player2.computerAttack(player1);
-
-            // Redraw player 1's board with the computer's attack
-            renderBoard(player1.gameboard, board1, player1.showShips);
-
-            // Reset game if player 2 wins
-            if (player1.gameboard.allShipsSunk()) {
-                gameOver = true;
-                const winner = player2
-
-                setTimeout(() => {
-                    renderBoard(player1.gameboard, board1, true)
-                    renderBoard(player2.gameboard, board2, true)
-                    renderWinner(winnerElement, winner);
-                    gameModeElement.style.display = 'flex';
-                    winnerElement.style.display = 'flex';
+                // Hide random placement once both players have placed ships
+                if (otherPlayer.gameboard.ships.length === 5) {
                     randomPlacementContainer.style.display = 'none';
-                }, turnSwitchDelay);
-                return;
-            }
-        }
-        // Switch turns for human vs human
-        if (gameMode === 'pvp') {
-            if (attackMode === 'classic'){
+                }
+
                 switchingPlayers = true;
-                setTimeout(() => {
-                    switchPlayers();
-                    showTurnPopup();
-                    switchingPlayers = false;
-                }, turnSwitchDelay);
-            }
-            else if(attackMode === 'escalating attacks'){
-                if(timesAttacked + 1 >= turnNumber){
-                    switchingPlayers = true;
-                    turnNumber += 1;
-                    timesAttacked = 0;
-                    setTimeout(() => {
+
+                showCountdown();
+                showPlacementMessage();
+
+                const playerPlacing = currentPlayer;
+
+                playerSwitchTimeout = setTimeout(() => {
+
+                    if (playerPlacing.gameboard.ships.length === 5) {
                         switchPlayers();
                         showTurnPopup();
-                        switchingPlayers = false;
-                    }, turnSwitchDelay);
-                } else {
-                    timesAttacked += 1;
-                }
+                        renderShips(ships, shipsContainer);
+                    }
+
+                    switchingPlayers = false;
+
+                    if (!gameStarted) {
+                        randomPlacementContainer.style.display = 'flex';
+                    }
+
+                    confirmPlacementButton.style.display = 'none';
+
+                }, lastShipDelay);
+            
+            // Prevent ships from being picked up once game has started
+            // Hide random ship placement button
+            } else {
+                randomPlacementContainer.style.display = 'none';
+                showCountdown();
+                showPlacementMessage();
             }
         }
     }
-    
 
-    // Handle Player vs Player selection
+    
+    // Show where ship is about to be placed
+    function previewShip(event) {
+
+        if (!currentPlayerElement) return;
+
+        // Remove previous preview
+        currentPlayerElement.querySelectorAll('.ship-preview').forEach(square => {
+            square.classList.remove('ship-preview');
+        });
+
+        // Check if a ship and direction are selected
+        if (!selectedShip || !direction) return;
+
+        // Find the closest square to the pointer
+        const square = event.target.closest('.square');
+
+        // Return if no square found
+        if (!square) return;
+
+        // Get row and column of square being hovered over
+        const row = parseInt(square.dataset.row);
+        const column = parseInt(square.dataset.column);
+
+        // Loop through each section of the selected ship
+        for (let i = 0; i < selectedShip.length; i++) {
+
+            // Start at the hovered square of each ship
+            let previewRow = row;
+            let previewColumn = column;
+
+            // Adjust the row or column based on the selected direction
+            if (direction === 'horizontal') {
+                previewColumn += i;
+            } else {
+                previewRow += i;
+            }
+
+            // Find the board square matching the calculated coordinates
+            const previewSquare = currentPlayerElement.querySelector(
+                `[data-row="${previewRow}"][data-column="${previewColumn}"]`
+            );
+
+            // Add the preview class if the square exists on the board
+            if (previewSquare) {
+                previewSquare.classList.add('ship-preview');
+            }
+        }
+    }
+
+
+    // Pick up ship
+    function pickUpShipFromBoard(event) {
+
+        // Return if both players have all 5 ships on the board
+        if (gameStarted) return;
+
+        if (selectedShip !== undefined) return;
+
+        // Return if no square was selected to pick a ship up from
+        const square = event.target.closest('.square');
+        if(!square) return;
+
+        // Get row and column of square being hovered over
+        const row = parseInt(square.dataset.row);
+        const column = parseInt(square.dataset.column);
+
+        // Get the ship object that is at the selected square on the board
+        selectedShip = currentPlayer.gameboard.board[row][column];
+
+        if(selectedShip !== null) {
+
+            // Pick up ship if there is a ship at the square
+            currentPlayer.gameboard.pickUpShip(selectedShip, [row, column])
+
+            // Show random placement button again
+            randomPlacementContainer.style.display = 'flex';
+
+            placementMessage.style.display = 'none';
+            
+        } else {
+            // Return if there is no ship object
+            return
+        }
+
+        // Add picked up ship to ships array
+        ships.push(selectedShip)
+        
+        // Clear selectedShip
+        selectedShip = undefined
+
+        // Stop countdown
+        stopCountdown();
+
+        // Render ships and boards
+        renderShips(ships, shipsContainer)
+        renderBoard(currentPlayer.gameboard, currentPlayerElement, currentPlayer.showShips )
+    }
+
+
+    // -----------------------------------------------------
+    // Game States
+    // -----------------------------------------------------
+
+
+    // Player vs player selection
     function pvpClick() {
+
+        // Clear winner message
         winnerElement.style.display = 'none';
+
+        // Reset game if no gameboards
         if(player1 !== undefined && player1.gameboard !== undefined){
             resetGame();
         }
+
+        // Initialize game
         initializeGame('pvp');
+
+        // Show attack mode section
         renderAttackMode(attackModeElement);
 
+        // Create escalating attacks and classic buttons
         document.querySelector('#escalating-attacks').addEventListener('click', escalatingAttacksClick);
         document.querySelector('#classic').addEventListener('click', classicClick);
     }
 
-    // Handle Player vs Computer selection
+    
+    // Player vs computer selection
     function pvcClick() {
 
-        renderRandomPlacement(randomPlacementContainer);
-        randomPlacementContainer.querySelector('#random-placement').addEventListener('click', randomShipPlacement);
-
+        // Clear winner message
         winnerElement.style.display = 'none';
+
+        // Reset game if no gameboards
         if(player1 !== undefined && player1.gameboard !== undefined){
             resetGame();
         }
+
+        // Initialize game
         initializeGame('pvc');
-        // Render ships and boards
-        renderShips(ships1, shipsContainer)
-        renderBoard(player1.gameboard, board1, showShips)
-        renderBoard(player2.gameboard, board2, false)
+
+        // Show attack mode section
+        renderAttackMode(attackModeElement);
+
+        // Create escalating attacks and classic buttons
+        document.querySelector('#escalating-attacks').addEventListener('click', escalatingAttacksClick);
+        document.querySelector('#classic').addEventListener('click', classicClick);
     }
 
+
+    // Escalating attacks selection
     function escalatingAttacksClick(){
-        renderShips(ships1, shipsContainer);
-
+        // Declare attack mode
         attackMode = 'escalating attacks'
-        // Render ships and boards
-        renderShips(ships1, shipsContainer)
-        renderBoard(player1.gameboard, board1, showShips)
-        renderBoard(player2.gameboard, board2, false)
-        renderRandomPlacement(randomPlacementContainer);
-        randomPlacementContainer.querySelector('#random-placement').addEventListener('click', randomShipPlacement);
-        attackModeElement.style.display = 'none';
-    }
 
-    function classicClick(){
-        renderRandomPlacement(randomPlacementContainer);
-        randomPlacementContainer.querySelector('#random-placement').addEventListener('click', randomShipPlacement);
+        // Show ships
         renderShips(ships1, shipsContainer);
 
-        attackMode = 'classic'
-        // Render ships and boards
-        renderShips(ships1, shipsContainer)
+        // Render boards
         renderBoard(player1.gameboard, board1, showShips)
         renderBoard(player2.gameboard, board2, false)
-        renderRandomPlacement(randomPlacementContainer);
-        randomPlacementContainer.querySelector('#random-placement').addEventListener('click', randomShipPlacement);
+
         attackModeElement.style.display = 'none';
+
+        renderRandomPlacement(randomPlacementContainer);
+        randomPlacementContainer.style.display = 'flex';
+        randomPlacementContainer.querySelector('#random-placement').addEventListener('click', randomShipPlacement);
     }
+
+    // Classic attacks selection
+    function classicClick(){
+        // Declare attack mode
+        attackMode = 'classic'
+
+        // Show ships
+        renderShips(ships1, shipsContainer);
+
+        // Render boards
+        renderBoard(player1.gameboard, board1, showShips)
+        renderBoard(player2.gameboard, board2, false)
+
+        attackModeElement.style.display = 'none';
+
+        renderRandomPlacement(randomPlacementContainer);
+        randomPlacementContainer.style.display = 'flex';
+        randomPlacementContainer.querySelector('#random-placement').addEventListener('click', randomShipPlacement);
+    }
+
+
+    // -----------------------------------------------------
+    // Turn Change
+    // -----------------------------------------------------
+
+
 
     // Switch current player
     function switchPlayers() {
@@ -552,57 +570,56 @@ function gameController(startGame) {
         renderBoard(player2.gameboard, board2, player2.showShips);
     }
 
-    // Randomly place ships
-    function randomShipPlacement() {
-        if (currentPlayer.gameboard.ships.length === 5) return;
 
-        currentPlayer.randomPlacement(ships);
-        renderShips(ships, shipsContainer);
-        renderBoard(currentPlayer.gameboard, currentPlayerElement, currentPlayer.showShips);
+    // Reset game to begining state
+    function resetGame(){
 
-        // Switch players once all five ships are placed
-        if (currentPlayer.gameboard.ships.length === 5) {
+        // Resets the board for each player
+        player1.gameboard.cleanBoard()
+        player2.gameboard.cleanBoard()
 
-            if (gameMode === 'pvp') {
+        // Make new ships
+        ships1 = makeShips()
+        ships2 = makeShips()
 
-                // Hide random placement once both players have placed ships
-                if (otherPlayer.gameboard.ships.length === 5) {
-                    randomPlacementContainer.style.display = 'none';
-                }
-
-                switchingPlayers = true;
-
-                showCountdown();
-
-                const playerPlacing = currentPlayer;
-
-                playerSwitchTimeout = setTimeout(() => {
-
-                    if (playerPlacing.gameboard.ships.length === 5) {
-                        switchPlayers();
-                        showTurnPopup();
-                        renderShips(ships, shipsContainer);
-                    }
-
-                    switchingPlayers = false;
-
-                    if (!gameStarted) {
-                        randomPlacementContainer.style.display = 'flex';
-                    }
-
-                    confirmPlacementButton.style.display = 'none';
-
-                }, lastShipDelay);
-            
-            // Prevent ships from being picked up once game has started
-            // Hide random ship placement button
-            } else {
-                randomPlacementContainer.style.display = 'none';
-                gameStarted = true;
-            }
+        if (gameMode === 'pvc') {
+            player2.placeAllShips(ships2);
         }
+
+        // Reset ship and direction selection
+        selectedShip = undefined;
+        selectedShipElement = undefined;
+        direction = undefined;
+
+        // Reset game state
+        gameStarted = false;
+        gameOver = false;
+        switchingPlayers = false;
+        confirmPlacementCount = 0;
+        turnNumber = 1;
+        timesAttacked = 0;
+
+        // Reset timers
+        clearInterval(countdown);
+        clearTimeout(playerSwitchTimeout);
+
+        // Reset the text inside the winner popup
+        winnerElement.innerHTML = '';
+
+        // Reset placement UI
+        placementMessage.style.display = 'none';
+        confirmPlacementButton.style.display = 'none';
+        countdownElement.style.display = 'none';
+        attacksRemaining.style.display = 'none';
+
+        // Show game mode selection
+        gameModeElement.style.display = 'flex';
+        randomPlacementContainer.style.display = 'none';
+        attackModeElement.style.display = 'flex';
     }
 
+
+    // Begin countdown clock
     function startCountdown(duration) {
 
         // Stop any existing countdown
@@ -624,16 +641,27 @@ function gameController(startGame) {
         }, 100)
     }
 
+
+    // Show popup when changing turns
     function showTurnPopup() {
         turnMessage.textContent = `${currentPlayer.name}'s Turn`;
         turnPopup.style.display = 'flex';
+        attacksRemaining.style.display = 'none';
     }
 
+
+    // Hide turn popup when continue is clicked
     function hideTurnPopup() {
         turnPopup.style.display = 'none';
         switchingPlayers = false;
+
+        if (attackMode === 'escalating attacks' && gameStarted) {
+            showAttacksRemaining();
+        }
     }
 
+
+    // Display countdown clock
     function showCountdown() {
         countdownElement.style.display = 'block';
         randomPlacementContainer.style.display = 'none';
@@ -642,6 +670,13 @@ function gameController(startGame) {
         confirmPlacementButton.textContent = 'Confirm Placement'
     }
 
+    function showPlacementMessage(){
+        placementMessage.style.display = 'block';
+        placementMessage.textContent = 'Click on a ship to place it again'
+    }
+
+
+    // Stop countdown
     function stopCountdown(){
         confirmPlacementButton.style.display = 'none';
 
@@ -655,65 +690,258 @@ function gameController(startGame) {
         switchingPlayers = false;
     }
 
+
+    // Confirm ship placement
     function confirmShipPlacement() {
+        confirmPlacementCount += 1;
         stopCountdown();
-        switchPlayers();
-        showTurnPopup();
-        renderShips(ships, shipsContainer);
+        placementMessage.style.display = 'none';
+
+        if(gameMode === 'pvp'){
+            switchPlayers();
+            showTurnPopup();
+            renderShips(ships, shipsContainer);
+
+            if(confirmPlacementCount >= 2){
+                gameStarted = true;
+                randomPlacementContainer.style.display = 'none';
+            }
+
+        } else if(gameMode === 'pvc'){
+            gameStarted = true;
+            randomPlacementContainer.style.display = 'none';
+            if (attackMode === 'escalating attacks') {
+                showAttacksRemaining();
+            }
+        }
+
+        if (attackMode === 'escalating attacks' && gameStarted) {
+            showAttacksRemaining();
+        }
     }
 
-    // Player 1 board
-    const board1  = document.querySelector('#player1-board');
-    // Player 2 board
-    const board2  = document.querySelector('#player2-board');
-    // Ships container
-    const shipsContainer = document.querySelector('#ships-container')
-    // Winner message container
-    const winnerElement = document.querySelector('#winner');
 
-    // Get HTML element for game mode selection
-    const gameModeElement = document.querySelector('#game-mode');
-    const pvpButton = document.querySelector('#pvp');
-    const pvcButton = document.querySelector('#pvc');
+    // -----------------------------------------------------
+    // Attacking
+    // -----------------------------------------------------
 
-    // Get HTML element for random placement
-    const randomPlacementContainer = document.querySelector('#random-placement-container');
 
-    const turnPopup = document.querySelector('#turn-switch-popup');
-    const turnMessage = document.querySelector('#turn-message');
-    const continueButton = document.querySelector('#continue-game');
+    function attackChecks(event) {
+        if (gameOver) return false;
+        if (switchingPlayers) return false;
 
-    const countdownElement = document.querySelector('#countdown');
+        // Stop if the game hasn't started
+        if (!currentPlayer) return false;
+
+        // Prevent attacking your own board
+        if (gameMode === 'pvc' && event.currentTarget === board1) return false;
+        if (gameMode === 'pvp' && event.currentTarget === currentPlayerElement) return false;
+
+        // Check if both players have all 5 ships placed
+        if (currentPlayer.gameboard.ships.length !== 5 || otherPlayer.gameboard.ships.length !== 5) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    function endGame(winner) {
+        gameOver = true;
+
+        setTimeout(() => {
+            renderBoard(player1.gameboard, board1, true);
+            renderBoard(player2.gameboard, board2, true);
+            renderWinner(winnerElement, winner);
+            gameModeElement.style.display = 'flex';
+            winnerElement.style.display = 'flex';
+            randomPlacementContainer.style.display = 'none';
+            attacksRemaining.style.display = 'none';
+        }, turnSwitchDelay);
+    }
+
+
+    function clickedSquare(event) {
+        // Find the clicked board square
+        const square = event.target.closest('.square');
+        if (!square) return;
+
+        // Get coordinates
+        const row = parseInt(square.dataset.row);
+        const column = parseInt(square.dataset.column);
+
+        return [row, column];
+    }
 
     
-    const attackModeElement = document.querySelector('#attack-mode');
+    function alreadyAttacked(targetPlayer, coordinates){
+        // Find already attacked squares
+        return targetPlayer.gameboard.attackedCoordinates.some((attack) => {
+            return attack[0] === coordinates[0] && attack[1] === coordinates[1];
+        });
+    }
 
-    const confirmPlacementButton = document.querySelector('#confirm-placement');
+    function computerTurnClassic() {
+        if (gameMode === 'pvp') return;
+
+        player2.computerAttack(player1);
+
+        renderBoard(player1.gameboard, board1, player1.showShips);
+
+        if (player1.gameboard.allShipsSunk()) {
+            endGame(player2);
+            return;
+        }
+    }
+
+    function computerTurnEscalting(){
+        attacksRemaining.style.display = 'flex';
+
+        for(let i = 0; i < turnNumber; i++){
+            player2.computerAttack(player1);
+
+            attackCount.textContent = turnNumber - (i + 1);
+
+            if (player1.gameboard.allShipsSunk()) {
+                attacksRemaining.style.display = 'none';
+                endGame(player2);
+                return;
+            }
+        }
+        turnNumber += 1;
+        timesAttacked = 0;
+        renderBoard(player1.gameboard, board1, player1.showShips);
+        showAttacksRemaining();
+    }
 
 
-    // Click handlers
-    // Human attack
-    board2.addEventListener('click', humanAttackClick);
+
+
+    function switchTurnsCheck(){
+        // Switch turns for human vs human
+        if (gameMode === 'pvp') {
+            if (attackMode === 'classic'){
+                switchingPlayers = true;
+                setTimeout(() => {
+                    switchPlayers();
+                    showTurnPopup();
+                    switchingPlayers = false;
+                }, turnSwitchDelay);
+            }
+            else if(attackMode === 'escalating attacks'){
+                if(timesAttacked + 1 >= turnNumber){
+                    switchingPlayers = true;
+
+                    // Show 0 for the final attack
+                    attackCount.textContent = 0;
+
+                    setTimeout(() => {
+                        turnNumber += 1;
+                        timesAttacked = 0;
+                        switchPlayers();
+                        showTurnPopup();
+                        switchingPlayers = false;
+                    }, turnSwitchDelay);
+                } else {
+                    timesAttacked += 1;
+                    showAttacksRemaining();
+                }
+            }
+        }
+    }
+
+
+    // Attack sequence
+    function humanAttackClick(event) {
+        if (!attackChecks(event)) return;
+
+        const coordinates = clickedSquare(event);
+        if(!coordinates) return;
+
+        const [row, column] = coordinates;
+
+        const targetPlayer = gameMode === 'pvc' ? player2 : otherPlayer;
+
+        if(alreadyAttacked(targetPlayer, coordinates)) return;
+
+        // Human player attacks computer
+        if (gameMode === 'pvc') {
+            player1.attack(player2, [row, column]);
+            renderBoard(player2.gameboard, board2, player2.showShips, [row, column]);
+            renderBoard(player1.gameboard, board1, player1.showShips);
+        } else {
+            // pvp
+            currentPlayer.attack(otherPlayer, [row, column]);
+
+            // Render opponent's board
+            renderBoard(otherPlayer.gameboard, otherPlayerElement, otherPlayer.showShips, [row, column]);
+        }
+
+        // Check winner
+        if (targetPlayer.gameboard.allShipsSunk()) {
+            endGame(currentPlayer);
+            return;
+        }
+
+        // Computer opponent's turn
+        if (gameMode === 'pvc') {
+
+            if (attackMode === 'classic') {
+                computerTurnClassic();
+
+            } else if (attackMode === 'escalating attacks') {
+                timesAttacked += 1;
+
+                if (timesAttacked >= turnNumber) {
+                    attacksRemaining.style.display = 'none';
+                    timesAttacked = 0;
+                    turnNumber += 1;
+                    computerTurnEscalting();
+                } else {
+                    showAttacksRemaining();
+                }
+            }
+
+        } else {
+            switchTurnsCheck();
+        }
+    }
+
+    function showAttacksRemaining() {
+        attacksRemaining.style.display = 'flex';
+        attackCount.textContent = turnNumber - timesAttacked;
+    }
+
+
+    // ------------------------------------------
+    // EVENT LISTENERS
+    // ------------------------------------------
+
+    // Board interactions
     board1.addEventListener('click', humanAttackClick);
-    // Human place ship
+    board2.addEventListener('click', humanAttackClick);
+
     board1.addEventListener('click', humanPlaceShip);
     board2.addEventListener('click', humanPlaceShip);
-    // Ship selection
-    shipsContainer.addEventListener('click', shipClick);
+
     board1.addEventListener('click', pickUpShipFromBoard);
     board2.addEventListener('click', pickUpShipFromBoard);
-    // Direction selection
-    shipsContainer.addEventListener('click', directionClick);
-    // Preview ship placement
+
     board1.addEventListener('mouseover', previewShip);
     board2.addEventListener('mouseover', previewShip);
-    // Listen for game mode selection
+
+    // Ship selection and direction
+    shipsContainer.addEventListener('click', shipClick);
+    shipsContainer.addEventListener('click', directionClick);
+
+    // Game mode selection
     pvpButton.addEventListener('click', pvpClick);
     pvcButton.addEventListener('click', pvcClick);
 
+    // Game controls
     continueButton.addEventListener('click', hideTurnPopup);
-
-    confirmPlacementButton.addEventListener('click', confirmShipPlacement)
+    confirmPlacementButton.addEventListener('click', confirmShipPlacement);
+    
 }
 
 export default gameController;

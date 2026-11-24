@@ -302,6 +302,8 @@ function renderAttackMode(element){
 // Render random ship placement button
 function renderRandomPlacement(element){
 
+    element.innerHTML = '';
+
     // Create the random placement button
     const randomPlacementButton = document.createElement('button');
     randomPlacementButton.textContent = 'Random Placement';
