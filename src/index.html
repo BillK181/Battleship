@@ -5,25 +5,73 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Battleship</title>
 </head>
 <body>
 
     <div class="page-container">
 
+        <!-- GAME START POPUP -->
         <div id="game-start-popup">
             <div class="game-start-content">
+
                 <h1 id="customize-message">Customize Game</h1>
 
-                <div class="board-size-selection">
-                    <h3>Board Size</h3>
-                    <input type="number" id="board-size" min="5" max="50" value="10">
+                <!-- PLAYER NAME SELECTION -->
+                <div class="name-selection">
+
+                    <div class="player-name-input">
+                        <label for="player1-name">Player 1 Name</label>
+                        <input
+                            type="text"
+                            id="player1-name"
+                            placeholder="Player 1"
+                            maxlength="15"
+                        >
+                    </div>
+
+                    <div class="player-name-input">
+                        <label for="player2-name">Player 2 Name</label>
+                        <input
+                            type="text"
+                            id="player2-name"
+                            placeholder="Player 2"
+                            maxlength="15"
+                        >
+                    </div>
+
+                    <div class="player-name-input">
+                        <label for="computer-name">Computer Name</label>
+                        <input
+                            type="text"
+                            id="computer-name"
+                            placeholder="Computer"
+                            maxlength="15"
+                        >
+                    </div>
+
                 </div>
 
+                <!-- BOARD SIZE SELECTION -->
+                <div class="board-size-selection">
+                    <h3>Board Size</h3>
+                    <input
+                        type="number"
+                        id="board-size"
+                        min="5"
+                        max="50"
+                        value="10"
+                    >
+                </div>
+
+                <!-- SHIP SELECTION -->
                 <div class="ship-selection">
-                    <h3>Customize Ships</h3>
+
+                    <h3>Add Ships</h3>
 
                     <div class="ship-option">
                         <label for="length1-amount">Length 1</label>
@@ -52,7 +100,7 @@
 
                     <div class="ship-option">
                         <label for="length6-amount">Length 6</label>
-                        <input type="number" id="length6-amount" min="0" value="0">
+                        <input type="number" id="length6-amount" min="0" value="1">
                     </div>
 
                     <div class="ship-option">
@@ -74,58 +122,70 @@
                         <label for="length10-amount">Length 10</label>
                         <input type="number" id="length10-amount" min="0" value="0">
                     </div>
+
                 </div>
 
+                <!-- START GAME -->
                 <button id="start">Start Game</button>
+
             </div>
         </div>
 
+        <!-- TURN SWITCH POPUP -->
         <div id="turn-switch-popup">
             <div class="turn-popup-content">
-                <h1 id="turn-message">Player 2's Turn</h1>
+                <h1 id="turn-message"></h1>
                 <button id="continue-game">Continue</button>
             </div>
         </div>
 
+        <!-- GAME TITLE -->
         <h1>Battleship</h1>
 
+        <!-- GAME MODE -->
         <div id="game-mode">
             <h2>Select Game Mode</h2>
             <button id="pvp">Player vs Player</button>
             <button id="pvc">Player vs Computer</button>
         </div>
 
+        <!-- ATTACK MODE -->
         <div id="attack-mode"></div>
 
+        <!-- WINNER -->
         <div id="winner"></div>
 
+        <!-- GAME BOARDS -->
         <div class="game-container">
+
             <div class="player1-container">
-                <h2>Player 1</h2>
+                <h2 id="player1-heading">Player 1</h2>
                 <div id="player1-board" class="board"></div>
             </div>
 
             <div class="player2-container">
-                <h2>Player 2</h2>
+                <h2 id="player2-heading">Player 2</h2>
                 <div id="player2-board" class="board"></div>
             </div>
 
+            <!-- PLACEMENT CONTROLS -->
             <div id="placement-controls">
                 <div id="countdown"></div>
                 <button id="confirm-placement"></button>
             </div>
 
+            <!-- ATTACKS REMAINING -->
             <div id="attacks-remaining">
                 <span id="count">1</span>
                 <span class="attacks-label">ATTACKS REMAINING</span>
             </div>
+
         </div>
 
+        <!-- ADDITIONAL GAME CONTROLS -->
         <div id="random-placement-container"></div>
         <div id="placement-message"></div>
-
         <div id="ships-container"></div>
-
         <div id="direction-container"></div>
 
     </div>

@@ -4,10 +4,17 @@
 ======================================== */
 
 .page-container {
+    display: flow-root;
     width: max-content;
     min-width: 100%;
+    min-height: 100vh;
     margin: 0 auto;
     text-align: center;
+
+    background-image: url("images/battleship_background.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 html {
@@ -21,7 +28,6 @@ html {
 body {
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 30px;
     min-height: 100vh;
     height: auto;
     overflow-x: auto;
@@ -29,16 +35,12 @@ body {
     color: #e2e8f0;
 
     background-color: #071827;
-    background-image: url("images/battleship_background.jpg");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
 }
 
 /* MAIN TITLE */
 h1 {
     font-family: 'Black Ops One', sans-serif;
-    font-size: 64px;
+    font-size: 100px;
     color: #facc15;
     text-align: center;
     letter-spacing: 4px;
@@ -70,7 +72,7 @@ h2 {
     align-items: flex-start;
     width: max-content;
     margin: 50px auto;
-    gap: 350px;
+    gap: 50px;
     flex-wrap: nowrap;
     position: relative;
     min-height: min-content;
@@ -79,6 +81,7 @@ h2 {
 .player1-container,
 .player2-container {
     display: flex;
+    margin: 10px 150px;
     flex-direction: column;
     align-items: center;
     gap: 15px;
@@ -96,6 +99,8 @@ h2 {
 ======================================== */
 
 .board {
+    position: relative;
+    isolation: isolate;
     display: grid;
     grid-template-columns: repeat(var(--board-size), minmax(0, 1fr));
     grid-template-rows: repeat(var(--board-size), minmax(0, 1fr));
@@ -104,15 +109,22 @@ h2 {
     max-width: 1000px;
     aspect-ratio: 1 / 1;
 
-    background-image: url('./images/ocean.jpeg');
-    background-size: cover;
-    background-position: center;
-
     border: 2px solid #38bdf8;
     border-radius: 5px;
     box-shadow:
         0 0 5px #38bdf8,
         0 0 15px rgba(56, 189, 248, 0.4);
+}
+
+.board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('./images/ocean.jpeg');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.5;
+    z-index: -1;
 }
 
 .square {
@@ -175,6 +187,11 @@ h2 {
 /* Tint ship sprites red when hit */
 .square.hit .shipPiece {
     filter: brightness(0.5) sepia(1) saturate(10) hue-rotate(-50deg);
+}
+
+.square:not(.hit).ship {
+    outline: 2px solid #22c55e;
+    outline-offset: -2px;
 }
 
 /* MISS */
@@ -720,13 +737,14 @@ button:hover {
 ======================================== */
 
 #placement-controls {
-    position: absolute;
+    position: fixed;
     left: 50%;
-    top: 150px;
-    transform: translateX(-50%);
+    top: 50%;
+    transform: translate(-50%, -50%);
 
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
     gap: 20px;
 
@@ -831,15 +849,15 @@ button:hover {
 
 
 #attacks-remaining {
-    position: absolute;
-    top: 70px;
+    position: fixed;
     left: 50%;
-    transform: translateX(-50%);
+    top: 50%;
+    transform: translate(-50%, -50%);
 
     display: none;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 4px;
 
     z-index: 5;
@@ -1051,6 +1069,58 @@ button:hover {
     box-shadow: 0 2px 0 #854d0e;
 }
 
+/* PLAYER NAME SELECTION */
+
+.name-selection {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.player-name-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 15px;
+
+    background: rgba(2, 12, 24, 0.45);
+    border: 1px solid #64748b;
+    border-radius: 8px;
+}
+
+.player-name-input label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #38bdf8;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.player-name-input input {
+    width: 100%;
+    padding: 10px;
+
+    color: #facc15;
+    background: #071827;
+    border: 1px solid #64748b;
+    border-radius: 5px;
+
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    outline: none;
+}
+
+.player-name-input input:focus {
+    border-color: #facc15;
+    box-shadow: 0 0 8px rgba(250, 204, 21, 0.35);
+}
+
+.player-name-input input::placeholder {
+    color: #64748b;
+}
+
 
 
 /* ========================================
@@ -1082,6 +1152,18 @@ button:hover {
 
     .board-size-selection {
         padding: 12px;
+    }
+
+    .name-selection {
+        grid-template-columns: 1fr;
+    }
+
+    .game-start-content {
+        padding: 25px 20px;
+    }
+
+    .ship-selection {
+        grid-template-columns: 1fr;
     }
 }
 

@@ -51,7 +51,7 @@ function renderBoard(gameboard, element, showShips, lastAttack = null) {
     element.innerHTML = '';
 
     element.style.setProperty('--board-size', gameboard.size);
-    element.style.width = `${gameboard.size * 50}px`;
+    element.style.width = `${gameboard.size * 30}px`;
 
     // Filter attacked coordinates to find only successful hits
     const hits = gameboard.attackedCoordinates.filter((attack) => {
@@ -120,6 +120,9 @@ function renderBoard(gameboard, element, showShips, lastAttack = null) {
             // Check if the current square contains a ship
             if (gameboard.board[i][j] !== null) {
                 const ship = gameboard.board[i][j];
+                if (showShips === true && !ship.isSunk()) {
+                    square.classList.add('ship');
+                }
 
                 // Check if the ship has sunk
                 if (ship.isSunk()) {
@@ -134,7 +137,7 @@ function renderBoard(gameboard, element, showShips, lastAttack = null) {
                 }
 
                 // Only display ship images if showShips is true
-                if (showShips === true) {
+                if (showShips === true || ship.isSunk()) {
 
                     // Check whether the same ship occupies neighboring squares
                     const left = j > 0 && gameboard.board[i][j - 1] === ship;

@@ -2,6 +2,7 @@ import { renderBoard, renderShips, renderWinner, renderRandomPlacement, renderGa
 import { makeShips } from "./Ship"
 import { ComputerPlayer } from './Player';
 
+
 function centerScreen() {
     const pageContainer = document.querySelector('.page-container');
 
@@ -11,6 +12,35 @@ function centerScreen() {
         window.scrollTo({
             left: Math.max(0, left),
             behavior: 'instant'
+        });
+    });
+}
+
+function zoomOut() {
+    const pageContainer = document.querySelector('.page-container');
+
+    // Reset zoom before measuring
+    pageContainer.style.zoom = '1';
+
+    requestAnimationFrame(() => {
+
+        // Calculate how much the page needs to shrink
+        const scaleX = window.innerWidth / pageContainer.scrollWidth;
+        const scaleY = window.innerHeight / pageContainer.scrollHeight;
+
+        const scale = Math.min(scaleX, scaleY, 1);
+
+        // Apply zoom
+        pageContainer.style.zoom = scale;
+
+        // Center the page AFTER zoom has been applied
+        requestAnimationFrame(() => {
+            const left = (pageContainer.scrollWidth - window.innerWidth) / 2;
+
+            window.scrollTo({
+                left: Math.max(0, left),
+                behavior: 'instant'
+            });
         });
     });
 }
@@ -135,10 +165,6 @@ function gameController(startGame) {
 
         totalShips1 = ships1.length;
         totalShips2 = ships2.length;
-
-        // Set player names
-        player1.name = 'Player 1';
-        player2.name = selectedGameMode === 'pvc' ? 'Computer' : 'Player 2';
 
         // Set initial player and board references
         currentPlayer = player1;
@@ -547,6 +573,13 @@ function gameController(startGame) {
         // Render boards
         renderBoard(player1.gameboard, board1, showShips)
         renderBoard(player2.gameboard, board2, false)
+
+        if (player1.gameboard.size > 17) {
+            zoomOut();
+        } else {
+            centerScreen();
+        }
+
         centerScreen()
 
         attackModeElement.style.display = 'none';
@@ -567,6 +600,13 @@ function gameController(startGame) {
         // Render boards
         renderBoard(player1.gameboard, board1, showShips)
         renderBoard(player2.gameboard, board2, false)
+
+        if (player1.gameboard.size > 17) {
+            zoomOut();
+        } else {
+            centerScreen();
+        }
+
         centerScreen();
 
         attackModeElement.style.display = 'none';
