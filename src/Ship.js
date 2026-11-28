@@ -1,3 +1,5 @@
+import Gameboard from './Gameboard';
+
 class Ship {
     constructor(length) {
         this.length = length
@@ -36,5 +38,18 @@ function makeShips() {
     return ships
 }
 
+function makeCustomShips(counts) {
+    const ships = [];
+
+    counts.forEach((amount, index) => {
+        const shipLength = index + 1;
+        for (let i = 0; i < amount; i++) {
+            ships.push(new Ship(shipLength));
+        }
+    });
+
+    return ships;
+}
+
 export default Ship;
-export { makeShips };
+export { makeShips, makeCustomShips };

@@ -3,6 +3,17 @@
    GENERAL
 ======================================== */
 
+.page-container {
+    width: max-content;
+    min-width: 100%;
+    margin: 0 auto;
+    text-align: center;
+}
+
+html {
+    overflow-x: visible;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -12,12 +23,16 @@ body {
     margin: 0;
     padding: 30px;
     min-height: 100vh;
+    height: auto;
+    overflow-x: auto;
+    overflow-y: auto;
     color: #e2e8f0;
+
     background-color: #071827;
-    background-image:
-        linear-gradient(rgba(148, 163, 184, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(148, 163, 184, 0.035) 1px, transparent 1px);
-    background-size: auto, 40px 40px, 40px 40px;
+    background-image: url("images/battleship_background.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 /* MAIN TITLE */
@@ -39,7 +54,7 @@ h2 {
     font-family: 'Rajdhani', sans-serif;
     font-size: 28px;
     font-weight: 700;
-    color: #334e68;
+    color: #facc15;;
     text-transform: uppercase;
     letter-spacing: 3px;
 }
@@ -51,12 +66,14 @@ h2 {
 
 .game-container {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: flex-start;
-    margin: 50px 10px;
+    width: max-content;
+    margin: 50px auto;
     gap: 350px;
     flex-wrap: nowrap;
     position: relative;
+    min-height: min-content;
 }
 
 .player1-container,
@@ -80,10 +97,13 @@ h2 {
 
 .board {
     display: grid;
-    grid-template-columns: repeat(10, 30px);
-    grid-template-rows: repeat(10, 30px);
-    width: 304px;
-    height: 304px;
+    grid-template-columns: repeat(var(--board-size), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--board-size), minmax(0, 1fr));
+
+    min-width: 400px;
+    max-width: 1000px;
+    aspect-ratio: 1 / 1;
+
     background-image: url('./images/ocean.jpeg');
     background-size: cover;
     background-position: center;
@@ -96,9 +116,9 @@ h2 {
 }
 
 .square {
-    width: 30px;
-    height: 30px;
-    border: 1px solid rgba(203, 213, 225, 0.5);
+    width: auto;
+    height: auto;
+    border: clamp(0.25px, calc(10px / var(--board-size)), 1px) solid rgba(203, 213, 225, 0.5);
     cursor: pointer;
     background-color: transparent;
     transition: background-color 0.15s ease;
@@ -688,7 +708,7 @@ button:hover {
     font-family: 'Rajdhani', sans-serif;
     font-size: 60px;
     font-weight: 700;
-    color: #334e68;
+    color: #facc1575;
     text-transform: uppercase;
     letter-spacing: 3px;
     text-align: center;
@@ -843,6 +863,196 @@ button:hover {
     text-transform: uppercase;
 }
 
+
+/* ========================================
+   GAME START / CUSTOMIZATION POPUP
+======================================== */
+
+#game-start-popup {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 25px;
+    background: rgba(2, 12, 24, 0.96);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+}
+
+.game-start-content {
+    width: 100%;
+    max-width: 850px;
+    max-height: 95vh;
+    overflow-y: auto;
+    padding: 35px 45px;
+
+    background: linear-gradient(145deg, #1e3a5f, #0b1727);
+
+    border: 2px solid #facc15;
+    border-radius: 12px;
+
+    box-shadow:
+        0 0 15px rgba(250, 204, 21, 0.25),
+        0 0 40px rgba(56, 189, 248, 0.15),
+        inset 0 0 25px rgba(148, 163, 184, 0.08);
+}
+
+/* TITLE */
+
+#customize-message {
+    font-family: 'Black Ops One', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    color: #facc15;
+    text-align: center;
+    letter-spacing: 3px;
+    margin: 0 0 30px;
+    text-shadow:
+        2px 2px 0 #854d0e,
+        0 0 15px rgba(250, 204, 21, 0.3);
+}
+
+/* SECTION HEADINGS */
+
+.game-start-content h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 23px;
+    font-weight: 700;
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0 0 15px;
+}
+
+/* BOARD SIZE */
+
+.board-size-selection {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 15px 20px;
+    margin-bottom: 25px;
+
+    background: rgba(2, 12, 24, 0.45);
+    border: 1px solid #64748b;
+    border-radius: 8px;
+}
+
+.board-size-selection h3 {
+    margin: 0;
+}
+
+/* SHIP SELECTION */
+
+.ship-selection {
+    padding: 20px;
+    background: rgba(2, 12, 24, 0.45);
+    border: 1px solid #64748b;
+    border-radius: 8px;
+}
+
+.ship-selection h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.ship-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: rgba(51, 78, 104, 0.35);
+    border: 1px solid rgba(100, 116, 139, 0.5);
+    border-radius: 5px;
+}
+
+.ship-option label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #e2e8f0;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.ship-option input,
+#board-size {
+    width: 75px;
+    padding: 7px;
+    color: #facc15;
+    background: #071827;
+    border: 1px solid #64748b;
+    border-radius: 5px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+}
+
+.ship-option input:focus,
+#board-size:focus {
+    border-color: #facc15;
+    box-shadow: 0 0 8px rgba(250, 204, 21, 0.35);
+}
+
+/* TWO-COLUMN SHIP GRID */
+
+.ship-selection {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.ship-selection h3 {
+    grid-column: 1 / -1;
+}
+
+/* START BUTTON */
+
+#start {
+    display: block;
+    width: 100%;
+    margin-top: 25px;
+    padding: 16px;
+
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 20px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+
+    color: #071827;
+    background: linear-gradient(145deg, #facc15, #ca8a04);
+
+    border: 2px solid #fef08a;
+    border-radius: 8px;
+
+    box-shadow:
+        0 5px 0 #854d0e,
+        0 8px 18px rgba(250, 204, 21, 0.2);
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#start:hover {
+    background: linear-gradient(145deg, #fef08a, #eab308);
+    transform: translateY(-3px);
+    box-shadow:
+        0 8px 0 #854d0e,
+        0 12px 25px rgba(250, 204, 21, 0.3);
+}
+
+#start:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #854d0e;
+}
+
+
+
 /* ========================================
    RESPONSIVE LAYOUT
 ======================================== */
@@ -856,6 +1066,22 @@ button:hover {
         flex-direction: column;
         align-items: center;
         gap: 40px;
+    }
+
+        #game-start-popup {
+        padding: 10px;
+    }
+
+    .game-start-content {
+        padding: 25px 18px;
+    }
+
+    .ship-selection {
+        grid-template-columns: 1fr;
+    }
+
+    .board-size-selection {
+        padding: 12px;
     }
 }
 

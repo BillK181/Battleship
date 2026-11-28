@@ -2,14 +2,10 @@ import Ship from '../src/Ship';
 import Gameboard from '../src/Gameboard';
 
 class Player {
-    constructor(name) {
-        this.name = name
-
-        // Give the player their own gameboard
-        this.gameboard = new Gameboard()
-
-        // Visibility of ships
-        this.showShips = true
+    constructor(name, size) {
+        this.name = name;
+        this.gameboard = new Gameboard(size);
+        this.showShips = true;
     }
 
     // Attack the opponent's gameboard at the given coordinates
@@ -46,10 +42,10 @@ class Player {
 
 // Create a ComputerPlayer class that inherits from Player
 class ComputerPlayer extends Player {
-    constructor(name) {
+    constructor(name, size) {
 
         // Run the parent Player constructor
-        super(name)
+        super(name, size)
     }
 
     

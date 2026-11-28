@@ -50,6 +50,9 @@ function renderBoard(gameboard, element, showShips, lastAttack = null) {
     // Clear the existing board before creating the updated board
     element.innerHTML = '';
 
+    element.style.setProperty('--board-size', gameboard.size);
+    element.style.width = `${gameboard.size * 50}px`;
+
     // Filter attacked coordinates to find only successful hits
     const hits = gameboard.attackedCoordinates.filter((attack) => {
         return !gameboard.missedAttacks.some((miss) => {
@@ -140,6 +143,11 @@ function renderBoard(gameboard, element, showShips, lastAttack = null) {
                     const below = i < gameboard.size - 1 && gameboard.board[i + 1][j] === ship;
 
                     // Horizontal ship pieces
+
+                    // Display a single-piece ship (length 1)
+                    if (ship.length === 1) {
+                        createShipPiece(square, horizontalStart);
+                    }
 
                     // Display the middle piece if the same ship is on both sides
                     if (left && right) {

@@ -1,8 +1,8 @@
 import Ship from '../src/Ship';
 
 class Gameboard {
-    constructor() {
-        this.size = 10
+    constructor(size) {
+        this.size = size
         this.attackedCoordinates = []
         this.missedAttacks = []
         this.ships = []
